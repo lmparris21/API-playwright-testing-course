@@ -5,6 +5,23 @@ import { test, expect } from '@playwright/test';
  * Base URL: https://conduit-api.bondaracademy.com
  */
 
+// Global variable to store the authentication token
+let authToken: string
+
+// Authenticate user and get token
+test.beforeAll(async ({ request }) => {
+  const loginResponse = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
+    data: {
+      "user": {
+        "email": "lmparris21@gmail.com",
+        "password": "apitesting123!"
+      }
+    }
+  })
+  const loginResponseJson = await loginResponse.json()
+  authToken = 'Token ' + loginResponseJson.user.token
+});
+
 /**
  * Test to verify the tags endpoint
  * Checks if tags are returned correctly and validates the response structure
@@ -43,18 +60,6 @@ test('Get All Articles', async ({ request }) => {
  * 4. Deletes the article
  */
 test('Create and Delete Article', async ({ request }) => {
-  // Authenticate user and get token
-  const tokenResponse = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
-    data: {
-      "user": {
-          "email": "lmparris21@gmail.com",
-          "password": "apitesting123!"
-      }
-  }
-  })
-  const tokenResponseJson = await tokenResponse.json()
-  const authToken = 'Token ' + tokenResponseJson.user.token
-
   // Create a new article
   const createArticleResponse = await request.post('https://conduit-api.bondaracademy.com/api/articles', {
     headers: {
@@ -113,18 +118,6 @@ test('Create and Delete Article', async ({ request }) => {
  * This test ensures all CRUD operations work correctly
  */
 test('Create, Update, and Delete Article', async ({ request }) => {
-  // Authenticate user and get token
-  const tokenResponse = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
-    data: {
-      "user": {
-          "email": "lmparris21@gmail.com",
-          "password": "apitesting123!"
-      }
-  }
-  })
-  const tokenResponseJson = await tokenResponse.json()
-  const authToken = 'Token ' + tokenResponseJson.user.token
-
   // Create a new article
   const createArticleResponse = await request.post('https://conduit-api.bondaracademy.com/api/articles', {
     headers: {

@@ -1,12 +1,13 @@
 # API Testing with Playwright
 
 This project demonstrates API testing using Playwright Test, focusing on testing REST API endpoints of the Conduit API.
-The UI is not tested in this project, but can be viewed at https://conduit.bondaracademy.com/ 
+The UI is not tested in this project, but can be viewed at https://conduit.bondaracademy.com/ for reference.
 
 ## Prerequisites
 
 - Node.js (v14 or higher)
 - npm or yarn
+- Playwright Test for VS Code extension 
 
 ## Installation
 
