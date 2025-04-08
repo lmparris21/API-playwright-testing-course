@@ -1,3 +1,4 @@
+/* API tests for the Conduit API endpoints before refactoring with the request handler class */
 import { test, expect } from '@playwright/test';
 
 /**
@@ -5,15 +6,15 @@ import { test, expect } from '@playwright/test';
  * Base URL: https://conduit-api.bondaracademy.com
  */
 
-// Global variable to store the authentication token
+/* Global variable to store the authentication token */
 let authToken: string
 
-// Authenticate user and get token
-test.beforeAll(async ({ request }) => {
+/* Authenticate user and get token */
+test.beforeAll('Get auth token', async ({ request }) => {
   const loginResponse = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
     data: {
       "user": {
-        "email": "lmparris21@gmail.com",
+        "email": "lmparris21@test.com",
         "password": "apitesting123!"
       }
     }
@@ -27,11 +28,11 @@ test.beforeAll(async ({ request }) => {
  * Checks if tags are returned correctly and validates the response structure
  */
 test('get test tags', async ({ request }) => {
-  // Send GET request to retrieve tags
+  /* Send GET request to retrieve tags */
   const getTagsResponse = await request.get('https://conduit-api.bondaracademy.com/api/tags')
   const getTagsResponseJson = await getTagsResponse.json()
 
-  // Verify response status and data structure
+  /* Verify response status and data structure */
   expect(getTagsResponse.status()).toEqual(200)
   expect(getTagsResponseJson.tags[0]).toEqual('Test')
   expect(getTagsResponseJson.tags.length).toBeLessThanOrEqual(10)
@@ -42,11 +43,11 @@ test('get test tags', async ({ request }) => {
  * Checks if articles are returned with correct limit and offset
  */
 test('Get All Articles', async ({ request }) => {
-  // Send GET request to retrieve articles with pagination parameters
+  /* Send GET request to retrieve articles with pagination parameters */
   const getArticlesResponse = await request.get('https://conduit-api.bondaracademy.com/api/articles?limit=10&offset=0')
   const getArticlesResponseJson = await getArticlesResponse.json()
 
-  // Verify response status and pagination works correctly
+  /* Verify response status and pagination works correctly */
   expect(getArticlesResponse.status()).toEqual(200)
   expect(getArticlesResponseJson.articles.length).toBeLessThanOrEqual(10)
   expect(getArticlesResponseJson.articlesCount).toEqual(10)
@@ -60,7 +61,7 @@ test('Get All Articles', async ({ request }) => {
  * 4. Deletes the article
  */
 test('Create and Delete Article', async ({ request }) => {
-  // Create a new article
+  /* Create a new article */
   const createArticleResponse = await request.post('https://conduit-api.bondaracademy.com/api/articles', {
     headers: {
       'Authorization': authToken  
@@ -76,12 +77,12 @@ test('Create and Delete Article', async ({ request }) => {
   })
   const createArticleResponseJson = await createArticleResponse.json()
   
-  // Verify article was created successfully
+  /* Verify article was created successfully */
   expect(createArticleResponse.status()).toEqual(201)
   expect(createArticleResponseJson.article.title).toEqual('Test Article')
   const articleSlug = createArticleResponseJson.article.slug
 
-  // Verify article appears in the articles list
+  /* Verify article appears in the articles list */
   const getArticlesResponse = await request.get('https://conduit-api.bondaracademy.com/api/articles?limit=10&offset=0', {
     headers: {
       'Authorization': authToken
@@ -91,7 +92,7 @@ test('Create and Delete Article', async ({ request }) => {
   expect(getArticlesResponse.status()).toEqual(200)
   expect(getArticlesResponseJson.articles[0].title).toEqual('Test Article')
 
-  // Delete the created article
+  /* Delete the created article */
   const deleteArticleResponse = await request.delete(`https://conduit-api.bondaracademy.com/api/articles/${articleSlug}`, {
     headers: {
       'Authorization': authToken
@@ -99,7 +100,7 @@ test('Create and Delete Article', async ({ request }) => {
   })
   expect(deleteArticleResponse.status()).toEqual(204)
   
-  // Verify article is deleted
+  /* Verify article is deleted */
   const getArticlesResponseAfterDelete = await request.get('https://conduit-api.bondaracademy.com/api/articles?limit=10&offset=0', {
     headers: {
       'Authorization': authToken
@@ -118,7 +119,7 @@ test('Create and Delete Article', async ({ request }) => {
  * This test ensures all CRUD operations work correctly
  */
 test('Create, Update, and Delete Article', async ({ request }) => {
-  // Create a new article
+  /* Create a new article */
   const createArticleResponse = await request.post('https://conduit-api.bondaracademy.com/api/articles', {
     headers: {
       'Authorization': authToken  
@@ -134,12 +135,12 @@ test('Create, Update, and Delete Article', async ({ request }) => {
   })
   const createArticleResponseJson = await createArticleResponse.json()
   
-  // Verify article creation
+  /* Verify article creation */
   expect(createArticleResponse.status()).toEqual(201)
   expect(createArticleResponseJson.article.title).toEqual('Test Article')
   const articleSlug = createArticleResponseJson.article.slug
 
-  // Verify article appears in the articles list
+  /* Verify article appears in the articles list */
   const getArticlesResponse = await request.get('https://conduit-api.bondaracademy.com/api/articles?limit=10&offset=0', {
     headers: {
       'Authorization': authToken
@@ -149,7 +150,7 @@ test('Create, Update, and Delete Article', async ({ request }) => {
   expect(getArticlesResponse.status()).toEqual(200)
   expect(getArticlesResponseJson.articles[0].title).toEqual('Test Article')
 
-  // Update the article with new content
+  /* Update the article with new content */
   const updateArticleResponse = await request.put(`https://conduit-api.bondaracademy.com/api/articles/${articleSlug}`, {
     headers: {
       'Authorization': authToken
@@ -164,12 +165,12 @@ test('Create, Update, and Delete Article', async ({ request }) => {
     }
   })
   
-  // Verify article update
+  /* Verify article update */
   const updateArticleResponseJson = await updateArticleResponse.json()
   expect(updateArticleResponse.status()).toEqual(200)
   expect(updateArticleResponseJson.article.title).toEqual('Updated Test Article')
 
-  // Verify article is updated in the articles list
+  /* Verify article is updated in the articles list */
   const getArticlesResponseAfterUpdate = await request.get('https://conduit-api.bondaracademy.com/api/articles?limit=10&offset=0', {
     headers: {
       'Authorization': authToken
@@ -180,7 +181,7 @@ test('Create, Update, and Delete Article', async ({ request }) => {
   expect(getArticlesResponseAfterUpdateJson.articles[0].title).toEqual('Updated Test Article')
   const updatedArticleSlug = getArticlesResponseAfterUpdateJson.articles[0].slug
 
-  // Clean up by deleting the article
+  /* Clean up by deleting the article */
   const deleteArticleResponse = await request.delete(`https://conduit-api.bondaracademy.com/api/articles/${updatedArticleSlug}`, {
     headers: {
       'Authorization': authToken
@@ -188,7 +189,7 @@ test('Create, Update, and Delete Article', async ({ request }) => {
   })
   expect(deleteArticleResponse.status()).toEqual(204)
 
-  // Verify article is deleted
+  /* Verify article is deleted */
   const getArticlesResponseAfterDelete = await request.get('https://conduit-api.bondaracademy.com/api/articles?limit=10&offset=0', {
     headers: {
       'Authorization': authToken
