@@ -1,6 +1,32 @@
 # API Testing with Playwright
 
-This project demonstrates API testing using Playwright Test, focusing on testing REST API endpoints of the Conduit API.
+This project demonstrates a robust API testing framework built with Playwright Test, focusing on testing REST API endpoints of the Conduit API. The framework showcases best practices for API testing and includes several key features:
+
+### Key Features
+
+- **Fluent Builder Pattern**: A chainable API for constructing requests
+- **Automatic Request/Response Logging**: Detailed logging of all API interactions
+- **Status Code Validation**: Automatic verification of HTTP status codes with detailed error reporting
+- **Custom Fixtures**: Reusable test configurations and setup
+- **Authentication Handling**: Built-in support for token-based authentication
+- **CRUD Operations**: Complete coverage of Create, Read, Update, Delete operations
+
+### Framework Structure
+
+- `utils/request-handler.ts`: Core request handling with builder pattern implementation
+- `utils/logger.ts`: Request/response logging functionality
+- `utils/fixtures.ts`: Playwright test fixtures and configurations
+- `tests/`: Test suites demonstrating various API testing scenarios
+
+### Test Coverage
+
+The framework includes tests for:
+- User Authentication
+- Article Management (CRUD operations)
+- Tag Retrieval
+- Pagination
+- Error Handling
+
 The UI is not tested in this project, but can be viewed at https://conduit.bondaracademy.com/ for reference.
 
 ## Prerequisites
