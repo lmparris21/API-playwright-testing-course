@@ -1,147 +1,99 @@
-/* Smoke test suite for the Conduit API using the request handler class */
-import { expect } from "@playwright/test";
-import { test } from "../utils/fixtures";
+import { test } from '../utils/fixtures';
+import { expect } from '../utils/custom-expect';
+import { createToken } from '../helpers/createToken';
+import { APILogger } from '../utils/logger';
 
-/* Store authentication token for use across test cases */
-let authToken: string;
+/*
+* This is needed if you want to use a different user than the default user.
+* The default user is the user in the api-test.config.ts file.
+*/
+// let authToken: string
 
-/**
- * Setup: Authenticate user before running tests
- * Stores the auth token for subsequent authenticated requests
- */
-test.beforeAll('Get auth token', async ({ api }) => {
-  const loginResponse = await api
-    .path("/users/login")
-    .body({"user": {"email": "lmparris21@test.com","password": "apitesting123!"}})
-    .postRequest(200);
-  authToken = 'Token ' + loginResponse.user.token;
-});
+// test.beforeAll(async ({ api }) => {
+//     authToken = await createToken('pwapiuser@test.com', 'Welcome')
+// })
 
-/**
- * Test: Get articles with pagination
- * Verifies:
- * - Successful retrieval of articles
- * - Correct pagination implementation
- */
-test("get articles", async ({ api }) => {
-  /* Send GET request with pagination parameters */
-  const response = await api
-    .path("/articles")
-    .params({ limit: 10, offset: 0 })
-    .getRequest(200);
-  
-  /* Verify pagination and response structure */
-  expect(response.articles.length).toBeLessThanOrEqual(10);
-  expect(response.articlesCount).toEqual(10);
-});
+test('Get Articles', async ({ api }) => {
+    const articlesResponse = await api
+        .path('/articles')
+        //.headers({ 'Authorization': authToken }) //uncomment this to add the Authorization header other than the defaultAuthToken
+        .params({ limit: 10, offset: 0 })
+        //.clearAuth() //uncomment this to clear the default Authorization header
+        .getRequest(200)
+    await expect(articlesResponse).shouldMatchSchema('articles', 'GET_articles')
+    expect(articlesResponse.articles.length).shouldBeLessThanOrEqual(10)
+    expect(articlesResponse.articlesCount).shouldEqual(10)
+})
 
-/**
- * Test: Get available tags
- * Verifies:
- * - Successful retrieval of tags
- * - Presence of expected tag
- * - Correct response structure
- */
-test("get test tags", async ({ api }) => {
-  const response = await api
-    .path("/tags")
-    .getRequest(200);
-  
-  /* Verify tag list contents */
-  expect(response.tags[0]).toEqual("Test");
-  expect(response.tags.length).toBeLessThanOrEqual(10);
-});
+test('Get Test Tags', async ({ api }) => {
+    const tagsResponse = await api
+        .path('/tags')
+        .getRequest(200)
+    await expect(tagsResponse).shouldMatchSchema('tags', 'GET_tags')
+    expect(tagsResponse.tags[0]).shouldEqual('Test')
+    expect(tagsResponse.tags.length).shouldBeLessThanOrEqual(10)
+})
 
-/**
- * Test: Article CRUD operations - Create and Delete
- * Demonstrates:
- * - Article creation with authentication
- * - Verification of created article
- * - Article deletion
- * - Verification of deletion
- */
-test("create and delete article", async ({ api }) => {
-  /* Create new article with auth token */
-  const createArticleResponse = await api
-    .path("/articles")
-    .headers({ Authorization: authToken })
-    .body({"article": {"title": "Test Article","description": "Test Description","body": "Test Body","tagList": ["Test"]}})
-    .postRequest(201);
-  
-  /* Verify creation and store slug for later use */
-  expect(createArticleResponse.article.title).toEqual('Test Article');
-  const articleSlug = createArticleResponse.article.slug;
+test('Create and Delete Article', async ({ api }) => {
+    const createArticleResponse = await api
+        .path('/articles')
+        .body({ "article": { "title": "Hello World", "description": "Hello World", "body": "HELLO", "tagList": [] } })
+        .postRequest(201)
+    await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_articles')
+    expect(createArticleResponse.article.title).shouldEqual('Hello World')
+    const slugId = createArticleResponse.article.slug
 
-  /* Verify article appears in article list */
-  const getArticlesResponse = await api
-    .path("/articles")
-    .headers({ Authorization: authToken })
-    .params({ limit: 10, offset: 0 })
-    .getRequest(200);
-  expect(getArticlesResponse.articles[0].title).toEqual('Test Article');
+    const articlesResponse = await api
+        .path('/articles')
+        .params({ limit: 10, offset: 0 })
+        .getRequest(200)
+    await expect(articlesResponse).shouldMatchSchema('articles', 'GET_articles')
+    expect(articlesResponse.articles[0].title).shouldEqual('Hello World')
 
-  /* Clean up: Delete article */
-  await api
-    .path(`/articles/${articleSlug}`)
-    .headers({ Authorization: authToken })
-    .deleteRequest(204);
+    const updateArticleResponse = await api
+        .path(`/articles/${slugId}`)
+        .body({ "article": { "title": "Hello World Updated", "description": "Hello World Updated", "body": "HELLO", "tagList": [] } })
+        .putRequest(200)
+    await expect(updateArticleResponse).shouldMatchSchema('articles', 'PUT_articles')
+    expect(updateArticleResponse.article.title).shouldEqual('Hello World Updated')
+    const slugIdUpdated = updateArticleResponse.article.slug
 
-  /* Verify deletion */
-  const getArticlesResponseAfterDelete = await api
-    .path("/articles")
-    .headers({ Authorization: authToken })
-    .params({ limit: 10, offset: 0 })
-    .getRequest(200);
-  expect(getArticlesResponseAfterDelete.articles[0].title).not.toEqual('Test Article');
-});
+    const articlesResponseUpdated = await api
+        .path('/articles')
+        .params({ limit: 10, offset: 0 })
+        .getRequest(200)
+    await expect(articlesResponseUpdated).shouldMatchSchema('articles', 'GET_articles')
+    expect(articlesResponseUpdated.articles[0].title).shouldEqual('Hello World Updated')
 
-/**
- * Test: Article CRUD operations - Create, Update, and Delete
- * Demonstrates:
- * - Article creation
- * - Article update
- * - Verification of updates
- * - Article deletion
- * - Complete CRUD cycle verification
- */
-test("create, update and delete article", async ({ api }) => {
-  /* Create initial article */
-  const createArticleResponse = await api
-    .path("/articles")
-    .headers({ Authorization: authToken })
-    .body({"article": {"title": "Test Article 2","description": "Test Description","body": "Test Body","tagList": ["Test"]}})
-    .postRequest(201);
-  expect(createArticleResponse.article.title).toEqual('Test Article 2');
-  const articleSlug = createArticleResponse.article.slug;
+    await api
+        .path(`/articles/${slugIdUpdated}`)
+        .deleteRequest(204)
 
-  /* Update the article */
-  const updateArticleResponse = await api
-    .path(`/articles/${articleSlug}`)
-    .headers({ Authorization: authToken })
-    .body({"article": {"title": "Updated Test Article 2","description": "Test Description","body": "Test Body","tagList": ["Test"]}})
-    .putRequest(200);
-  expect(updateArticleResponse.article.title).toEqual('Updated Test Article 2');
-  const updatedArticleSlug = updateArticleResponse.article.slug;
+    const articlesResponseTwo = await api
+        .path('/articles')
+        .params({ limit: 10, offset: 0 })
+        .getRequest(200)
+    await expect(articlesResponseTwo).shouldMatchSchema('articles', 'GET_articles')
+    expect(articlesResponseTwo.articles[0].title).not.shouldEqual('Hello World Updated')
+})
 
-  /* Verify update in article list */
-  const getArticlesResponse = await api
-    .path("/articles")
-    .headers({ Authorization: authToken })
-    .params({ limit: 10, offset: 0 })
-    .getRequest(200);
-  expect(getArticlesResponse.articles[0].title).toEqual('Updated Test Article 2');
+/*
+* This test is used to test the logger.
+* It creates two logger instances and logs two requests.
+* It then gets the recent logs from each logger and prints them to the console. 
+* This is used to test the logger and ensure it is working as expected.
+* It is not used in the other tests.
+*/
+test('logger', async () => {
+    const logger = new APILogger()
+    const logger2 = new APILogger()
+    logger.logRequest('POST', 'https://api.realworld.io/api/articles', { 'Authorization': 'Bearer 1234567890' }, {foo: 'bar'})
+    logger.logResponse(200, {foo: 'bar'})
+    logger2.logRequest('GET', 'https://api.realworld.io/api/articles123', { 'Authorization': 'Bearer 1234567890' }, {foo: 'bar'})
+    logger2.logResponse(200, {foo: 'bar'})
+    const recentLogs = logger.getRecentLogs()
+    const recentLogs2 = logger2.getRecentLogs()
+    console.log(recentLogs)
+    console.log(recentLogs2)
+})
 
-  /* Clean up: Delete article */
-  await api
-    .path(`/articles/${updatedArticleSlug}`)
-    .headers({ Authorization: authToken })
-    .deleteRequest(204);
-
-  /* Verify deletion */
-  const getArticlesResponseAfterDelete = await api
-    .path("/articles")
-    .headers({ Authorization: authToken })
-    .params({ limit: 10, offset: 0 })
-    .getRequest(200);
-  expect(getArticlesResponseAfterDelete.articles[0].title).not.toEqual('Updated Test Article 2');
-});
