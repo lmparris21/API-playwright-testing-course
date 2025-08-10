@@ -209,7 +209,7 @@ await expect(response).shouldMatchSchema('directory', 'filename')
 ## 📁 Project Structure
 
 ```
-📦 playwright-api-testing-framework/
+📦 API-testing-course/
 ├── 🔧 Configuration
 │   ├── api-test.config.ts           # API and environment configuration
 │   ├── playwright.config.ts         # Playwright test runner configuration
@@ -217,20 +217,30 @@ await expect(response).shouldMatchSchema('directory', 'filename')
 ├── 🏗️ Helpers
 │   └── createToken.ts               # Authentication token generation
 ├── 🛠️ Utils
-│   ├── fixtures.ts                  # Test fixtures and dependency injection
-│   ├── request-handler.ts           # Core API request handling
 │   ├── custom-expect.ts             # Enhanced assertion matchers
+│   ├── data-generator.ts            # Randomized test data (Faker)
+│   ├── fixtures.ts                  # Test fixtures and dependency injection
 │   ├── logger.ts                    # Request/response logging
-│   └── schema-validator.ts          # JSON schema validation
-├── 🧪 Tests
-│   ├── smokeTest.spec.ts            # Framework-based test examples
-│   └── initialTests.spec.ts         # Basic Playwright API tests
+│   ├── request-handler.ts           # Core API request handling
+│   └── schema-validator.ts          # JSON schema validation helpers
+├── 📄 Request Objects
+│   └── articles/
+│       └── POST-article.json        # Base payload template for article creation
 ├── 📋 Response Schemas
-│   ├── articles/                    # Article endpoint schemas
-│   └── tags/                        # Tag endpoint schemas
-└── 📊 Reports
-    ├── playwright-report/           # HTML test reports
-    └── test-results/                # Test execution artifacts
+│   ├── articles/
+│   │   ├── GET_articles_schema.json
+│   │   ├── POST_articles_schema.json
+│   │   └── PUT_articles_schema.json
+│   └── tags/
+│       └── GET_tags_schema.json
+├── 🧪 Tests
+│   ├── initialTests.spec.ts         # Basic Playwright API tests
+│   ├── negativeTests.spec.ts        # Negative validation scenarios
+│   └── smokeTest.spec.ts            # Core endpoint smoke coverage
+├── 📊 Reports
+│   ├── playwright-report/           # HTML test reports
+│   └── test-results/                # Test execution artifacts
+└── readme.md
 ```
 
 ## 🎓 Learning Resources

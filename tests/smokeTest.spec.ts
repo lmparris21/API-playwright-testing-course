@@ -2,6 +2,9 @@ import { test } from '../utils/fixtures';
 import { expect } from '../utils/custom-expect';
 import { createToken } from '../helpers/createToken';
 import { APILogger } from '../utils/logger';
+import articleRequestPayload from '../request-objects/articles/POST-article.json'
+import { faker } from '@faker-js/faker'
+import { getNewRandomArticle } from '../utils/data-generator';
 
 /*
 * This is needed if you want to use a different user than the default user.
@@ -35,12 +38,15 @@ test('Get Test Tags', async ({ api }) => {
 })
 
 test('Create and Delete Article', async ({ api }) => {
+    // const articleRequest = JSON.parse(JSON.stringify(articleRequestPayload))  /* This is needed to avoid the reference issues if running tests in parallel */ 
+    // articleRequest.article.title = 'This is an object'  /* uncomment if you want to override the title */
+    const articleRequest = getNewRandomArticle()
     const createArticleResponse = await api
         .path('/articles')
-        .body({ "article": { "title": "Hello World", "description": "Hello World", "body": "HELLO", "tagList": [] } })
+        .body(articleRequest)
         .postRequest(201)
     await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_articles')
-    expect(createArticleResponse.article.title).shouldEqual('Hello World')
+    expect(createArticleResponse.article.title).shouldEqual(articleRequest.article.title)
     const slugId = createArticleResponse.article.slug
 
     const articlesResponse = await api
@@ -48,14 +54,48 @@ test('Create and Delete Article', async ({ api }) => {
         .params({ limit: 10, offset: 0 })
         .getRequest(200)
     await expect(articlesResponse).shouldMatchSchema('articles', 'GET_articles')
-    expect(articlesResponse.articles[0].title).shouldEqual('Hello World')
+    expect(articlesResponse.articles[0].title).shouldEqual(articleRequest.article.title)
 
-    const updateArticleResponse = await api
+    await api
         .path(`/articles/${slugId}`)
-        .body({ "article": { "title": "Hello World Updated", "description": "Hello World Updated", "body": "HELLO", "tagList": [] } })
+        .deleteRequest(204)
+
+    const articlesResponseTwo = await api
+        .path('/articles')
+        .params({ limit: 10, offset: 0 })
+        .getRequest(200)
+    await expect(articlesResponseTwo).shouldMatchSchema('articles', 'GET_articles')
+    expect(articlesResponseTwo.articles[0].title).not.shouldEqual(articleRequest.article.title)
+})
+
+test('Create, Update and Delete Article', async ({ api }) => {
+    const articleTitle = faker.lorem.sentence(5)
+    const articleRequest = JSON.parse(JSON.stringify(articleRequestPayload))  /* This is needed to avoid the reference issues if running tests in parallel */ 
+    articleRequest.article.title = articleTitle  /* This is overriding the title in the request payload */
+    const createArticleResponse = await api
+        .path('/articles')
+        .body(articleRequest)
+        .postRequest(201)
+    await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_articles')
+    expect(createArticleResponse.article.title).shouldEqual(articleTitle)
+    const slugId = createArticleResponse.article.slug
+
+    const articlesResponse = await api
+        .path('/articles')
+        .params({ limit: 10, offset: 0 })
+        .getRequest(200)
+    await expect(articlesResponse).shouldMatchSchema('articles', 'GET_articles')
+    expect(articlesResponse.articles[0].title).shouldEqual(articleTitle)
+
+    const articleTitleModified = faker.lorem.sentence(5)
+    articleRequest.article.title = articleTitleModified  /* This is overriding the title in the request payload */
+    const updateArticleResponse = await api
+        
+        .path(`/articles/${slugId}`)
+        .body(articleRequest)
         .putRequest(200)
     await expect(updateArticleResponse).shouldMatchSchema('articles', 'PUT_articles')
-    expect(updateArticleResponse.article.title).shouldEqual('Hello World Updated')
+    expect(updateArticleResponse.article.title).shouldEqual(articleTitleModified)
     const slugIdUpdated = updateArticleResponse.article.slug
 
     const articlesResponseUpdated = await api
@@ -63,7 +103,7 @@ test('Create and Delete Article', async ({ api }) => {
         .params({ limit: 10, offset: 0 })
         .getRequest(200)
     await expect(articlesResponseUpdated).shouldMatchSchema('articles', 'GET_articles')
-    expect(articlesResponseUpdated.articles[0].title).shouldEqual('Hello World Updated')
+    expect(articlesResponseUpdated.articles[0].title).shouldEqual(articleTitleModified)
 
     await api
         .path(`/articles/${slugIdUpdated}`)
@@ -74,7 +114,7 @@ test('Create and Delete Article', async ({ api }) => {
         .params({ limit: 10, offset: 0 })
         .getRequest(200)
     await expect(articlesResponseTwo).shouldMatchSchema('articles', 'GET_articles')
-    expect(articlesResponseTwo.articles[0].title).not.shouldEqual('Hello World Updated')
+    expect(articlesResponseTwo.articles[0].title).not.shouldEqual(articleTitleModified)
 })
 
 /*
