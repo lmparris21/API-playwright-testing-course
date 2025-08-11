@@ -9,8 +9,8 @@
  * - Uses the shared `api` fixture to build and send HTTP requests
  * - Uses custom expect helpers from `../utils/custom-expect`
  */
-import { test } from "../utils/fixtures";
-import { expect } from "../utils/custom-expect";
+import { test } from "../../utils/fixtures";
+import { expect } from "../../utils/custom-expect";
 
 /**
  * Test matrix

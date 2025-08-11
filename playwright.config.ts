@@ -17,15 +17,28 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: [['html'], ['list']],
-  use: {},
+  use: {
+    baseURL: 'https://conduit.bondaracademy.com/',
+    trace: 'retain-on-failure',
+  },
 
   projects: [
     {
-      name: 'api-testing'
+      name: 'api-testing',
+      testDir: './tests/api-tests',
+      dependencies: ['smoke-tests']
     },
     {
       name: 'smoke-tests',
+      testDir: './tests/api-tests',
       testMatch: 'smoke*'  /* this will run all the tests with the word smoke in the name */
+    },
+    {
+      name: 'ui-tests',
+      testDir: './tests/ui-tests',
+      use: {
+        defaultBrowserType: 'chromium'
+      }
     }
   ],
 });

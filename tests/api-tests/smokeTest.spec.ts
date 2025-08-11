@@ -1,10 +1,10 @@
-import { test } from '../utils/fixtures';
-import { expect } from '../utils/custom-expect';
-import { createToken } from '../helpers/createToken';
-import { APILogger } from '../utils/logger';
-import articleRequestPayload from '../request-objects/articles/POST-article.json'
+import { test } from '../../utils/fixtures';
+import { expect } from '../../utils/custom-expect';
+import { createToken } from '../../helpers/createToken';
+import { APILogger } from '../../utils/logger';
+import articleRequestPayload from '../../request-objects/articles/POST-article.json'
 import { faker } from '@faker-js/faker'
-import { getNewRandomArticle } from '../utils/data-generator';
+import { getNewRandomArticle } from '../../utils/data-generator';
 
 /*
 * This is needed if you want to use a different user than the default user.

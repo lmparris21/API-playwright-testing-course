@@ -1,3 +1,7 @@
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+
 /**
  * API Test Configuration
  * 
@@ -47,8 +51,11 @@ if(env === 'qa'){
 
 /* Production Environment Configuration */
 if(env === 'prod'){
-    config.userEmail = 'pwtest@test.com',
-    config.userPassword = 'Welcome2'
+    // if(!process.env.PROD_USER_EMAIL || !process.env.PROD_USER_PASSWORD){     /* uncomment if you want to throw an error if the environment variables are not set */
+    //     throw Error(`Missing required environment variables`)
+    // }
+    config.userEmail = process.env.PROD_USER_EMAIL as string,
+    config.userPassword = process.env.PROD_USER_PASSWORD as string
 }
 
 /* Export the configuration object for use throughout the framework */
